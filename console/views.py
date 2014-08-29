@@ -14,9 +14,6 @@ def console(request):
     """
     VNC instance block
     """
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/login')
-
     if request.method == 'GET':
         token = request.GET.get('token', '')
 

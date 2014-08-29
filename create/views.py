@@ -18,9 +18,6 @@ def create(request, host_id):
     """
     Create new instance.
     """
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/login')
-
     conn = None
     errors = []
     storages = []

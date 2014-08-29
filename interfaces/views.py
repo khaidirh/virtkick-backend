@@ -15,9 +15,6 @@ def interfaces(request, host_id):
     Interfaces block
 
     """
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/')
-
     errors = []
     ifaces_all = []
     compute = Compute.objects.get(id=host_id)
@@ -58,9 +55,6 @@ def interface(request, host_id, iface):
     Interface block
 
     """
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/')
-
     errors = []
     ifaces_all = []
     compute = Compute.objects.get(id=host_id)

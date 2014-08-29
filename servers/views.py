@@ -16,19 +16,13 @@ def index(request):
     Index page.
 
     """
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/login')
-    else:
-        return HttpResponseRedirect('/servers')
+    return HttpResponseRedirect('/servers')
 
 
 def servers_list(request):
     """
     Servers page.
     """
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/login')
-
     def get_hosts_status(hosts):
         """
         Function return all hosts all vds on host
@@ -116,9 +110,6 @@ def infrastructure(request):
     """
     Infrastructure page.
     """
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/login')
-
     compute = Compute.objects.filter()
     hosts_vms = {}
 

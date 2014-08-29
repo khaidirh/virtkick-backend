@@ -20,9 +20,6 @@ def instusage(request, host_id, vname):
     """
     Return instance usage
     """
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/login')
-
     cookies = {}
     datasets = {}
     datasets_rd = []
@@ -304,9 +301,6 @@ def insts_status(request, host_id):
     """
     Instances block
     """
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/login')
-
     errors = []
     instances = []
     compute = Compute.objects.get(id=host_id)
@@ -341,9 +335,6 @@ def instances(request, host_id):
     """
     Instances block
     """
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/login')
-
     errors = []
     instances = []
     time_refresh = 8000
@@ -412,9 +403,6 @@ def instance(request, host_id, vname):
     """
     Instance block
     """
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/login')
-
     def show_clone_disk(disks):
         clone_disk = []
         for disk in disks:

@@ -14,9 +14,6 @@ def secrets(request, host_id):
     """
     Networks block
     """
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/login')
-
     errors = []
     secrets_all = []
     compute = Compute.objects.get(id=host_id)
