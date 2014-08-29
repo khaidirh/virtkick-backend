@@ -9,6 +9,8 @@ from servers.models import Compute
 from vrtManager.hostdetails import wvmHostDetails
 from webvirtmgr.settings import TIME_JS_REFRESH
 
+from shared.helpers import render
+
 
 def hostusage(request, host_id):
     """
@@ -123,4 +125,4 @@ def overview(request, host_id):
     except libvirtError as err:
         errors.append(err)
 
-    return render_to_response('hostdetail.html', locals(), context_instance=RequestContext(request))
+    return render(None, 'hostdetail.html', locals(), request)

@@ -15,6 +15,8 @@ from vrtManager.instance import wvmInstances, wvmInstance
 from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE
 from webvirtmgr.settings import TIME_JS_REFRESH, QEMU_KEYMAPS
 
+from shared.helpers import render
+
 
 def instusage(request, host_id, vname):
     """
@@ -396,7 +398,7 @@ def instances(request, host_id):
         except libvirtError as err:
             errors.append(err)
 
-    return render_to_response('instances.html', locals(), context_instance=RequestContext(request))
+    return render(None, 'instances.html', locals(), request)
 
 
 def instance(request, host_id, vname):
@@ -595,4 +597,4 @@ def instance(request, host_id, vname):
     except libvirtError as err:
         errors.append(err)
 
-    return render_to_response('instance.html', locals(), context_instance=RequestContext(request))
+    return render(None, 'instance.html', locals(), request)

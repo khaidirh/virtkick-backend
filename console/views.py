@@ -9,6 +9,8 @@ from vrtManager.instance import wvmInstance
 
 from webvirtmgr.settings import WS_PORT
 
+from shared.helpers import render
+
 
 def console(request):
     """
@@ -39,6 +41,6 @@ def console(request):
     if ':' in ws_host:
         ws_host = re.sub(':[0-9]+', '', ws_host)
 
-    response = render_to_response('console.html', locals(), context_instance=RequestContext(request))
+    response = render(None, 'console.html', locals(), request)
     response.set_cookie('token', token)
     return response

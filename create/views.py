@@ -13,6 +13,8 @@ from vrtManager.create import wvmCreate
 from vrtManager import util
 from create.forms import FlavorAddForm, NewVMForm
 
+from shared.helpers import render
+
 
 def create(request, host_id):
     """
@@ -132,4 +134,4 @@ def create(request, host_id):
 
         conn.close()
 
-    return render_to_response('create.html', locals(), context_instance=RequestContext(request))
+    return render(None, 'create.html', locals(), request)

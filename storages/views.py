@@ -10,6 +10,8 @@ from vrtManager.storage import wvmStorage, wvmStorages
 
 from libvirt import libvirtError
 
+from shared.helpers import render
+
 
 def storages(request, host_id):
     """
@@ -53,7 +55,7 @@ def storages(request, host_id):
     except libvirtError as err:
         errors.append(err)
 
-    return render_to_response('storages.html', locals(), context_instance=RequestContext(request))
+    return render(None, 'storages.html', locals(), request)
 
 
 def storage(request, host_id, pool):
@@ -179,4 +181,4 @@ def storage(request, host_id, pool):
                         errors.append(err)
     conn.close()
 
-    return render_to_response('storage.html', locals(), context_instance=RequestContext(request))
+    return render(None, 'storage.html', locals(), request)

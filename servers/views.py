@@ -9,6 +9,8 @@ from vrtManager.hostdetails import wvmHostDetails
 from vrtManager.connection import CONN_SSH, CONN_TCP, CONN_TLS, connection_manager
 from libvirt import libvirtError
 
+from shared.helpers import render
+
 
 def index(request):
     """
@@ -103,7 +105,7 @@ def servers_list(request):
                 compute_edit.save()
                 return HttpResponseRedirect(request.get_full_path())
 
-    return render_to_response('servers.html', locals(), context_instance=RequestContext(request))
+    return render(None, 'servers.html', locals(), request)
 
 
 def infrastructure(request):
@@ -127,4 +129,4 @@ def infrastructure(request):
         else:
             hosts_vms[host.id, host.name, 2, 0, 0, 0] = None
 
-    return render_to_response('infrastructure.html', locals(), context_instance=RequestContext(request))
+    return render(None, 'infrastructure.html', locals(), request)

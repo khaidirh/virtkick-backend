@@ -9,6 +9,8 @@ from vrtManager.interface import wvmInterface, wvmInterfaces
 
 from libvirt import libvirtError
 
+from shared.helpers import render
+
 
 def interfaces(request, host_id):
     """
@@ -47,7 +49,7 @@ def interfaces(request, host_id):
     except libvirtError as err:
         errors.append(err)
 
-    return render_to_response('interfaces.html', locals(), context_instance=RequestContext(request))
+    return render(None, 'interfaces.html', locals(), request)
 
 
 def interface(request, host_id, iface):
@@ -89,4 +91,4 @@ def interface(request, host_id, iface):
     except libvirtError as err:
         errors.append(err)
 
-    return render_to_response('interface.html', locals(), context_instance=RequestContext(request))
+    return render(None, 'interface.html', locals(), request)

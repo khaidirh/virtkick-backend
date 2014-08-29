@@ -9,6 +9,8 @@ from vrtManager.secrets import wvmSecrets
 
 from libvirt import libvirtError
 
+from shared.helpers import render
+
 
 def secrets(request, host_id):
     """
@@ -54,4 +56,4 @@ def secrets(request, host_id):
     except libvirtError as err:
         errors.append(err)
 
-    return render_to_response('secrets.html', locals(), context_instance=RequestContext(request))
+    return render(None, 'secrets.html', locals(), request)

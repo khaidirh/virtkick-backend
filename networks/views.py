@@ -11,6 +11,8 @@ from vrtManager.network import network_size
 
 from libvirt import libvirtError
 
+from shared.helpers import render
+
 
 def networks(request, host_id):
     """
@@ -49,7 +51,7 @@ def networks(request, host_id):
     except libvirtError as err:
         errors.append(err)
 
-    return render_to_response('networks.html', locals(), context_instance=RequestContext(request))
+    return render(None, 'networks.html', locals(), request)
 
 
 def network(request, host_id, pool):
@@ -110,4 +112,4 @@ def network(request, host_id, pool):
 
     conn.close()
 
-    return render_to_response('network.html', locals(), context_instance=RequestContext(request))
+    return render(None, 'network.html', locals(), request)
