@@ -376,6 +376,8 @@ def instances(request, host_id):
                           'storage': conn2.get_disk_device(),
                           'has_managed_save_image': conn.get_instance_managed_save_image(instance)})
 
+    conn2.close()
+
     if conn:
         try:
             if request.method == 'POST':
@@ -461,11 +463,12 @@ def instance(request, host_id, vname):
         vcpu_host = len(vcpu_range)
         telnet_port = conn.get_telnet_port()
         vnc_port = conn.get_vnc_port()
-        vnc_keymap = conn.get_vnc_keymap
+        vnc_keymap = conn.get_vnc_keymap()
         snapshots = sorted(conn.get_snapshot(), reverse=True)
         inst_xml = conn._XMLDesc(VIR_DOMAIN_XML_SECURE)
         has_managed_save_image = conn.get_managed_save_image()
         clone_disks = show_clone_disk(disks)
+        cpu_usage = conn.cpu_usage()['cpu']
     except libvirtError as err:
         errors.append(err)
 
@@ -608,5 +611,30 @@ def instance(request, host_id, vname):
     except libvirtError as err:
         errors.append(err)
 
-    object = {}
+    object = {
+        'name': vname,
+        'status': status,
+        'autostart': autostart,
+        'vcpu': vcpu,
+        'cur_vcpu': cur_vcpu,
+        'uuid': uuid,
+        'memory': memory,
+        'cur_memory': cur_memory,
+        'description': description,
+        'disks': disks,
+        'media': media,
+        'networks': networks,
+        'media_iso': media_iso,
+        'vcpu_range': vcpu_range.__len__(),
+        'memory_host': memory_host,
+        'vcpu_host': vcpu_host,
+        'telnet_port': telnet_port,
+        'vnc_port': vnc_port,
+        'vnc_keymap': vnc_keymap,
+        'snapshots': snapshots,
+        'inst_xml': inst_xml.__str__(),
+        'has_managed_save_image': has_managed_save_image,
+        'clone_disks': clone_disks,
+        'cpu_usage': cpu_usage
+    }
     return render(object, 'instance.html', locals(), request)
