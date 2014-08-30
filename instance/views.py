@@ -409,7 +409,8 @@ def instances(request, host_id):
             errors.append(err)
 
     object = {
-        'instances': instances
+        'instances': instances,
+        'errors': errors
     }
     return render(object, 'instances.html', locals(), request)
 
