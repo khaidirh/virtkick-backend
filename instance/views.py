@@ -361,11 +361,19 @@ def instances(request, host_id):
             uuid = conn.get_uuid(instance)
             inst = Instance(compute_id=host_id, name=instance, uuid=uuid)
             inst.save()
+
+        conn2 = wvmInstance(compute.hostname,
+            compute.login,
+            compute.password,
+            compute.type,
+            instance)
+
         instances.append({'name': instance,
                           'status': conn.get_instance_status(instance),
                           'uuid': uuid,
                           'memory': conn.get_instance_memory(instance),
                           'vcpu': conn.get_instance_vcpu(instance),
+                          'storage': conn2.get_disk_device(),
                           'has_managed_save_image': conn.get_instance_managed_save_image(instance)})
 
     if conn:
@@ -398,7 +406,10 @@ def instances(request, host_id):
         except libvirtError as err:
             errors.append(err)
 
-    return render(None, 'instances.html', locals(), request)
+    object = {
+        'instances': instances
+    }
+    return render(object, 'instances.html', locals(), request)
 
 
 def instance(request, host_id, vname):
@@ -597,4 +608,5 @@ def instance(request, host_id, vname):
     except libvirtError as err:
         errors.append(err)
 
-    return render(None, 'instance.html', locals(), request)
+    object = {}
+    return render(object, 'instance.html', locals(), request)
