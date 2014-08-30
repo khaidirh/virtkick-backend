@@ -465,6 +465,7 @@ def instance(request, host_id, vname):
         telnet_port = conn.get_telnet_port()
         vnc_port = conn.get_vnc_port()
         vnc_keymap = conn.get_vnc_keymap()
+        vnc_password = conn.get_vnc_passwd()
         snapshots = sorted(conn.get_snapshot(), reverse=True)
         inst_xml = conn._XMLDesc(VIR_DOMAIN_XML_SECURE)
         has_managed_save_image = conn.get_managed_save_image()
@@ -636,6 +637,7 @@ def instance(request, host_id, vname):
         'inst_xml': inst_xml.__str__(),
         'has_managed_save_image': has_managed_save_image,
         'clone_disks': clone_disks,
-        'cpu_usage': cpu_usage
+        'cpu_usage': cpu_usage,
+        'vnc_password': vnc_password
     }
     return render(object, 'instance.html', locals(), request)
