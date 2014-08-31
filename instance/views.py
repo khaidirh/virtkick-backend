@@ -410,7 +410,7 @@ def instances(request, host_id):
 
     object = {
         'instances': instances,
-        'errors': errors
+        'errors': [str(error) for error in errors]
     }
     return render(object, 'instances.html', locals(), request)
 
