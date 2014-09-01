@@ -55,7 +55,11 @@ def storages(request, host_id):
     except libvirtError as err:
         errors.append(err)
 
-    return render(None, 'storages.html', locals(), request)
+    object = {
+        'storages': storages,
+        'secrets': secrets
+    }
+    return render(object, 'storages.html', locals(), request)
 
 
 def storage(request, host_id, pool):

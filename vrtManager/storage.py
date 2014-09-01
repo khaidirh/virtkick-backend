@@ -18,7 +18,8 @@ class wvmStorages(wvmConnect):
             else:
                 stg_vol = None
             stg_size = stg.info()[1]
-            storages.append({'name': pool, 'status': stg_status,
+            enabled = True if stg_status else False
+            storages.append({'name': pool, 'status': stg_status, 'enabled': enabled,
                              'type': stg_type, 'volumes': stg_vol,
                              'size': stg_size})
         return storages
