@@ -51,7 +51,7 @@ class AddStgPool(forms.Form):
 
 
 class AddImage(forms.Form):
-    name = forms.CharField(max_length=20)
+    name = forms.CharField()
     format = forms.ChoiceField(required=True, choices=(('qcow2', 'qcow2 (recommended)'),
                                                        ('qcow', 'qcow'),
                                                        ('raw', 'raw')))
@@ -62,9 +62,7 @@ class AddImage(forms.Form):
         name = self.cleaned_data['name']
         have_symbol = re.match('[^a-zA-Z0-9._-]+', name)
         if have_symbol:
-            raise forms.ValidationError(_('The image name must not contain any special characters'))
-        elif len(name) > 20:
-            raise forms.ValidationError(_('The image name must not exceed 20 characters'))
+           raise forms.ValidationError(_('The image name must not contain any special characters'))
         return name
 
 

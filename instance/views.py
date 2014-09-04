@@ -409,7 +409,9 @@ def instances(request, host_id):
             errors.append(err)
 
     object = {
-        'instances': instances,
+        'response': {
+            'instances': instances
+        },
         'errors': [str(error) for error in errors]
     }
     return render(object, 'instances.html', locals(), request)
@@ -614,30 +616,33 @@ def instance(request, host_id, vname):
         errors.append(err)
 
     object = {
-        'name': vname,
-        'status': status,
-        'autostart': autostart,
-        'vcpu': vcpu,
-        'cur_vcpu': cur_vcpu,
-        'uuid': uuid,
-        'memory': memory,
-        'cur_memory': cur_memory,
-        'description': description,
-        'disks': disks,
-        'media': media,
-        'networks': networks,
-        'media_iso': media_iso,
-        'vcpu_range': vcpu_range.__len__(),
-        'memory_host': memory_host,
-        'vcpu_host': vcpu_host,
-        'telnet_port': telnet_port,
-        'vnc_port': vnc_port,
-        'vnc_keymap': vnc_keymap,
-        'snapshots': snapshots,
-        'inst_xml': inst_xml.__str__(),
-        'has_managed_save_image': has_managed_save_image,
-        'clone_disks': clone_disks,
-        'cpu_usage': cpu_usage,
-        'vnc_password': vnc_password
+        'errors': [],
+        'response': {
+            'name': vname,
+            'status': status,
+            'autostart': autostart,
+            'vcpu': vcpu,
+            'cur_vcpu': cur_vcpu,
+            'uuid': uuid,
+            'memory': memory,
+            'cur_memory': cur_memory,
+            'description': description,
+            'disks': disks,
+            'media': media,
+            'networks': networks,
+            'media_iso': media_iso,
+            'vcpu_range': vcpu_range.__len__(),
+            'memory_host': memory_host,
+            'vcpu_host': vcpu_host,
+            'telnet_port': telnet_port,
+            'vnc_port': vnc_port,
+            'vnc_keymap': vnc_keymap,
+            'snapshots': snapshots,
+            'inst_xml': inst_xml.__str__(),
+            'has_managed_save_image': has_managed_save_image,
+            'clone_disks': clone_disks,
+            'cpu_usage': cpu_usage,
+            'vnc_password': vnc_password
+        }
     }
     return render(object, 'instance.html', locals(), request)

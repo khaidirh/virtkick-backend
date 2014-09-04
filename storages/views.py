@@ -56,8 +56,11 @@ def storages(request, host_id):
         errors.append(err)
 
     object = {
-        'storages': storages,
-        'secrets': secrets
+        'response': {
+            'storages': storages,
+            'secrets': secrets,
+        },
+        'errors': [str(error) for error in errors]
     }
     return render(object, 'storages.html', locals(), request)
 
@@ -147,6 +150,8 @@ def storage(request, host_id, pool):
                     return HttpResponseRedirect(request.get_full_path())
                 except libvirtError as err:
                     errors.append(err)
+            else:
+                errors.append('Invalid input.')
         if 'del_volume' in request.POST:
             volname = request.POST.get('volname', '')
             try:
@@ -185,4 +190,8 @@ def storage(request, host_id, pool):
                         errors.append(err)
     conn.close()
 
-    return render(None, 'storage.html', locals(), request)
+    object = {
+        'errors': [str(error) for error in errors],
+        'response': {}
+    }
+    return render(object, 'storage.html', locals(), request)
