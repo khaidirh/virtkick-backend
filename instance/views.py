@@ -520,6 +520,11 @@ def instance(request, host_id, vname):
                 finally:
                     conn.delete()
                 return HttpResponseRedirect('/instances/%s/' % host_id)
+            if 'assign_volume' in request.POST:
+                file = request.POST.get('file', '')
+                device = request.POST.get('device', '')
+                conn.assign_volume(file, device)
+                return HttpResponseRedirect(request.get_full_path() + '#instancedevice')
             if 'snapshot' in request.POST:
                 name = request.POST.get('name', '')
                 conn.create_snapshot(name)
@@ -616,7 +621,7 @@ def instance(request, host_id, vname):
         errors.append(err)
 
     object = {
-        'errors': [],
+        'errors': [str(error) for error in errors],
         'response': {
             'name': vname,
             'status': status,

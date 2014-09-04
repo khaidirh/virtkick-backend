@@ -192,6 +192,14 @@ def storage(request, host_id, pool):
 
     object = {
         'errors': [str(error) for error in errors],
-        'response': {}
+        'response': {
+            'type': type,
+            'path': path,
+            'status': status,
+            'usage': percent,
+            'state': state,
+            'autostart': autostart,
+            'pool': pool
+        }
     }
     return render(object, 'storage.html', locals(), request)

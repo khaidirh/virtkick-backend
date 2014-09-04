@@ -194,27 +194,29 @@ class wvmInstance(wvmConnect):
             storage = None
             src_fl = None
             disk_format = None
-            for disk in ctx.xpathEval('/domain/devices/disk'):
-                device = disk.xpathEval('@device')[0].content
-                if device == 'disk':
+            for disk in ctx.xpathEval('/domain/devices/disk[@device="disk"]'):
+                try:
+                    dev = disk.xpathEval('target/@dev')[0].content
+                    src_fl = disk.xpathEval('source/@file|source/@dev|source/@name')[0].content
+                    disk_format = disk.xpathEval('driver/@type')[0].content
                     try:
-                        dev = disk.xpathEval('target/@dev')[0].content
-                        src_fl = disk.xpathEval('source/@file|source/@dev|source/@name')[0].content
-                        disk_format = disk.xpathEval('driver/@type')[0].content
-                        try:
-                            vol = self.get_volume_by_path(src_fl)
-                            volume = vol.name()
-                            stg = vol.storagePoolLookupByVolume()
-                            storage = stg.name()
-                            info = vol.info()
-                        except libvirtError:
-                            volume = src_fl
-                    except:
-                        pass
-                    finally:
-                        result.append(
-                            {'dev': dev, 'image': volume, 'storage': storage, 'path': src_fl, 'format': disk_format,
-                             'type': info[0], 'capacity': info[1], 'allocation': info[2]})
+                        vol = self.get_volume_by_path(src_fl)
+                        volume = vol.name()
+                        stg = vol.storagePoolLookupByVolume()
+                        storage = stg.name()
+                        info = vol.info()
+
+                        print info
+                        print stg.info()
+                        print 'xd'
+                    except libvirtError:
+                        volume = src_fl
+                except:
+                    pass
+                finally:
+                    result.append(
+                        {'dev': dev, 'image': volume, 'storage': storage, 'path': src_fl, 'format': disk_format,
+                         'type': info[0], 'capacity': info[1], 'allocation': info[2]})
             return result
 
         return util.get_xml_path(self._XMLDesc(0), func=disks)
@@ -247,6 +249,22 @@ class wvmInstance(wvmConnect):
             return result
 
         return util.get_xml_path(self._XMLDesc(0), func=disks)
+
+    def assign_volume(self, file, device):
+        xml = self._XMLDesc(VIR_DOMAIN_XML_SECURE)
+        tree = ElementTree.fromstring(xml)
+        devices = tree.findall('devices')[-1]
+
+        disk = ElementTree.Element('disk', {'type': 'file', 'device': 'disk'})
+        disk.append(ElementTree.Element('driver', {'name': 'qemu', 'type': 'qcow2'}))
+        disk.append(ElementTree.Element('source', {'file': file}))
+        disk.append(ElementTree.Element('target', {'dev': device, 'bus': 'virtio'}))
+        # address tag will be configured automatically by libvirt
+        devices.append(disk)
+
+        new_xml = ElementTree.tostring(tree)
+        print new_xml
+        self._defineXML(new_xml)
 
     def mount_iso(self, dev, image):
         storages = self.get_storages()
