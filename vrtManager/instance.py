@@ -205,10 +205,6 @@ class wvmInstance(wvmConnect):
                         stg = vol.storagePoolLookupByVolume()
                         storage = stg.name()
                         info = vol.info()
-
-                        print info
-                        print stg.info()
-                        print 'xd'
                     except libvirtError:
                         volume = src_fl
                 except:
@@ -263,8 +259,24 @@ class wvmInstance(wvmConnect):
         devices.append(disk)
 
         new_xml = ElementTree.tostring(tree)
-        print new_xml
         self._defineXML(new_xml)
+
+    def unassign_volume(self, device_to_unassign):
+        xml = self._XMLDesc(VIR_DOMAIN_XML_SECURE)
+        tree = ElementTree.fromstring(xml)
+
+        devices = tree.findall('devices')[-1]
+        for device in devices:
+            print device
+            if device.tag == 'disk':
+                target = device.findall('target')[-1]
+                print target
+                if target.get('dev') == device_to_unassign:
+                    devices.remove(device)
+
+        new_xml = ElementTree.tostring(tree)
+        self._defineXML(new_xml)
+
 
     def mount_iso(self, dev, image):
         storages = self.get_storages()

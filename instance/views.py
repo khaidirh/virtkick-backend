@@ -525,6 +525,10 @@ def instance(request, host_id, vname):
                 device = request.POST.get('device', '')
                 conn.assign_volume(file, device)
                 return HttpResponseRedirect(request.get_full_path() + '#instancedevice')
+            if 'unassign_volume' in request.POST:
+                device = request.POST.get('device', '')
+                conn.unassign_volume(device)
+                return HttpResponseRedirect(request.get_full_path() + '#instancedevice')
             if 'snapshot' in request.POST:
                 name = request.POST.get('name', '')
                 conn.create_snapshot(name)
