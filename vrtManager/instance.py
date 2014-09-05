@@ -3,7 +3,8 @@
 #
 import time
 import os.path
-from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, VIR_MIGRATE_UNSAFE
+from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, VIR_MIGRATE_UNSAFE, \
+    VIR_DOMAIN_SNAPSHOT_CREATE_LIVE, VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY, VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC
 from vrtManager import util
 from xml.etree import ElementTree
 from datetime import datetime
@@ -194,6 +195,7 @@ class wvmInstance(wvmConnect):
             storage = None
             src_fl = None
             disk_format = None
+            info = None
             for disk in ctx.xpathEval('/domain/devices/disk[@device="disk"]'):
                 try:
                     dev = disk.xpathEval('target/@dev')[0].content
@@ -210,9 +212,11 @@ class wvmInstance(wvmConnect):
                 except:
                     pass
                 finally:
-                    result.append(
-                        {'dev': dev, 'image': volume, 'storage': storage, 'path': src_fl, 'format': disk_format,
-                         'type': info[0], 'capacity': info[1], 'allocation': info[2]})
+                    obj = {'dev': dev, 'image': volume, 'storage': storage, 'path': src_fl, 'format': disk_format}
+                    if info:
+                        obj.update({'type': info[0], 'capacity': info[1], 'allocation': info[2]})
+                    result.append(obj)
+
             return result
 
         return util.get_xml_path(self._XMLDesc(0), func=disks)
@@ -270,7 +274,6 @@ class wvmInstance(wvmConnect):
             print device
             if device.tag == 'disk':
                 target = device.findall('target')[-1]
-                print target
                 if target.get('dev') == device_to_unassign:
                     devices.remove(device)
 
@@ -519,6 +522,14 @@ class wvmInstance(wvmConnect):
         xml += """<active>0</active>
                   </domainsnapshot>"""
         self._snapshotCreateXML(xml, 0)
+
+    def create_external_storage_snapshot(self, name):
+        xml = """<domainsnapshot>
+                     <name>%s</name>
+                     <creationTime>%d</creationTime>""" % (name, time.time())
+        xml += self._XMLDesc(VIR_DOMAIN_XML_SECURE)
+        xml += """</domainsnapshot>"""
+        self._snapshotCreateXML(xml, VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY | VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC)
 
     def get_snapshot(self):
         snapshots = []
