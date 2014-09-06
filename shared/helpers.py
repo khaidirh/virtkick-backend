@@ -6,8 +6,15 @@ from django.template import RequestContext
 import json
 
 
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, obj):
+       if hasattr(obj, 'isoformat'):
+           return obj.isoformat()
+       else:
+           return json.JSONEncoder.default(self, obj)
+
 def render(object, template, locals, request):
     if 'application/json' in request.META['HTTP_ACCEPT']:
-        return HttpResponse(json.dumps(object), content_type='application/json')
+        return HttpResponse(json.dumps(object, cls=DateTimeEncoder), content_type='application/json')
     else:
         return render_to_response(template, locals, context_instance=RequestContext(request))

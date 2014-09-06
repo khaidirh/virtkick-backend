@@ -4,7 +4,8 @@
 import time
 import os.path
 from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, VIR_MIGRATE_UNSAFE, \
-    VIR_DOMAIN_SNAPSHOT_CREATE_LIVE, VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY, VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC
+    VIR_DOMAIN_SNAPSHOT_CREATE_LIVE, VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY, VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC, \
+    VIR_DOMAIN_AFFECT_CONFIG, VIR_DOMAIN_AFFECT_CURRENT, VIR_DOMAIN_AFFECT_LIVE
 from vrtManager import util
 from xml.etree import ElementTree
 from datetime import datetime
@@ -251,23 +252,32 @@ class wvmInstance(wvmConnect):
         return util.get_xml_path(self._XMLDesc(0), func=disks)
 
     def assign_volume(self, file, device):
-        xml = self._XMLDesc(VIR_DOMAIN_XML_SECURE)
-        tree = ElementTree.fromstring(xml)
-        devices = tree.findall('devices')[-1]
-
         disk = ElementTree.Element('disk', {'type': 'file', 'device': 'disk'})
         disk.append(ElementTree.Element('driver', {'name': 'qemu', 'type': 'qcow2'}))
         disk.append(ElementTree.Element('source', {'file': file}))
         disk.append(ElementTree.Element('target', {'dev': device, 'bus': 'virtio'}))
-        # address tag will be configured automatically by libvirt
-        devices.append(disk)
 
-        new_xml = ElementTree.tostring(tree)
-        self._defineXML(new_xml)
+        not_active = self.get_status() != 1
+
+        if not_active:
+            xml = self._XMLDesc(VIR_DOMAIN_XML_SECURE)
+            tree = ElementTree.fromstring(xml)
+            tree.findall('devices')[-1].append(disk)
+            new_xml = ElementTree.tostring(tree)
+            self._defineXML(new_xml)
+        else:
+            xml = ElementTree.tostring(disk)
+            self.instance.attachDeviceFlags(xml,
+                    VIR_DOMAIN_AFFECT_CURRENT | VIR_DOMAIN_AFFECT_LIVE | VIR_DOMAIN_AFFECT_CONFIG)
 
     def unassign_volume(self, device_to_unassign):
+        not_active = self.get_status() != 1
+
+        # if not_active:
         xml = self._XMLDesc(VIR_DOMAIN_XML_SECURE)
         tree = ElementTree.fromstring(xml)
+
+        file_to_unassign = None  # for live detach only
 
         devices = tree.findall('devices')[-1]
         for device in devices:
@@ -275,10 +285,23 @@ class wvmInstance(wvmConnect):
             if device.tag == 'disk':
                 target = device.findall('target')[-1]
                 if target.get('dev') == device_to_unassign:
-                    devices.remove(device)
+                    if not_active:
+                        devices.remove(device)
+                    else:
+                        source = device.findall('source')[-1]
+                        file_to_unassign = source.get('file')
 
-        new_xml = ElementTree.tostring(tree)
-        self._defineXML(new_xml)
+        if not_active:
+            new_xml = ElementTree.tostring(tree)
+            self._defineXML(new_xml)
+        else:
+            disk = ElementTree.Element('disk', {'type': 'file', 'device': 'disk'})
+            disk.append(ElementTree.Element('driver', {'name': 'qemu', 'type': 'qcow2'}))
+            disk.append(ElementTree.Element('source', {'file': file_to_unassign}))
+            disk.append(ElementTree.Element('target', {'dev': device_to_unassign, 'bus': 'virtio'}))
+            xml = ElementTree.tostring(disk)
+            self.instance.detachDeviceFlags(xml,
+                    VIR_DOMAIN_AFFECT_CURRENT | VIR_DOMAIN_AFFECT_LIVE | VIR_DOMAIN_AFFECT_CONFIG)
 
 
     def mount_iso(self, dev, image):
