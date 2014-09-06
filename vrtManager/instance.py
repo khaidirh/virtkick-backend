@@ -546,12 +546,40 @@ class wvmInstance(wvmConnect):
                   </domainsnapshot>"""
         self._snapshotCreateXML(xml, 0)
 
-    def create_external_storage_snapshot(self, name):
+    def create_internal_storage_snapshot(self, device):
+        # Doesn't work - libvirt doesn't support single-disk internal snapshots.
+
         xml = """<domainsnapshot>
-                     <name>%s</name>
-                     <creationTime>%d</creationTime>""" % (name, time.time())
-        xml += self._XMLDesc(VIR_DOMAIN_XML_SECURE)
+                     <name>%s_%d</name>
+                     <creationTime>%d</creationTime>""" % (device, time.time(), time.time())
+        xml += """<disks>"""
+        for disk in self.get_disk_device():
+            dev = disk['dev']
+            if dev == device:
+                xml += """<disk snapshot="internal" name="%s"/>""" % dev
+            else:
+                xml += """<disk snapshot="no" name="%s"/>""" % dev
+        xml += """</disks>"""
         xml += """</domainsnapshot>"""
+
+        self._snapshotCreateXML(xml, VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY | VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC)
+
+    def create_external_storage_snapshot(self, device):
+        # External snapshots are usable for backups only. Can revert to them.
+
+        xml = """<domainsnapshot>
+                     <name>%s_%d</name>
+                     <creationTime>%d</creationTime>""" % (device, time.time(), time.time())
+        xml += """<disks>"""
+        for disk in self.get_disk_device():
+            dev = disk['dev']
+            if dev == device:
+                xml += """<disk snapshot="external" name="%s"/>""" % dev
+            else:
+                xml += """<disk snapshot="no" name="%s"/>""" % dev
+        xml += """</disks>"""
+        xml += """</domainsnapshot>"""
+
         self._snapshotCreateXML(xml, VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY | VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC)
 
     def get_snapshot(self):

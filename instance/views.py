@@ -533,8 +533,12 @@ def instance(request, host_id, vname):
                 name = request.POST.get('name', '')
                 conn.create_snapshot(name)
                 return HttpResponseRedirect(request.get_full_path() + '#istaceshapshosts')
+            if 'internal_storage_snapshot' in request.POST:
+                name = request.POST.get('device', '')
+                conn.create_internal_storage_snapshot(name)
+                return HttpResponseRedirect(request.get_full_path() + '#istaceshapshosts')
             if 'external_storage_snapshot' in request.POST:
-                name = request.POST.get('name', '')
+                name = request.POST.get('device', '')
                 conn.create_external_storage_snapshot(name)
                 return HttpResponseRedirect(request.get_full_path() + '#istaceshapshosts')
             if 'umount_iso' in request.POST:
