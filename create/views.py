@@ -1,6 +1,7 @@
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect
 from django.template import RequestContext
+from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
 from servers.models import Compute
@@ -134,4 +135,8 @@ def create(request, host_id):
 
         conn.close()
 
-    return render(None, 'create.html', locals(), request)
+    object = {
+        'errors': [force_text(error) for error in errors],
+        'response': {}
+    }
+    return render(object, 'create.html', locals(), request)
