@@ -539,7 +539,8 @@ def instance(request, host_id, vname):
                 return HttpResponseRedirect(request.get_full_path() + '#istaceshapshosts')
             if 'umount_iso' in request.POST:
                 image = request.POST.get('path', '')
-                dev = request.POST.get('umount_iso', '')
+                first_cd = media[0]['dev'] if len(media) > 0 else request.POST.get('umount_iso', '')
+                dev = request.POST.get('device', first_cd)
                 conn.umount_iso(dev, image)
                 return HttpResponseRedirect(request.get_full_path() + '#instancemedia')
             if 'mount_iso' in request.POST:

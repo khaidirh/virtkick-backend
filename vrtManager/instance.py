@@ -310,9 +310,13 @@ class wvmInstance(wvmConnect):
                 for elm in disk:
                     if elm.tag == 'target':
                         if elm.get('dev') == dev:
-                            src_media = ElementTree.Element('source')
+                            existing_media = disk.find('source')
+                            src_media = existing_media
+                            if src_media is None:
+                                src_media = ElementTree.Element('source')
                             src_media.set('file', vol.path())
-                            disk.insert(2, src_media)
+                            if existing_media is None:
+                                disk.insert(2, src_media)
                             return
 
         storages = self.get_storages()
