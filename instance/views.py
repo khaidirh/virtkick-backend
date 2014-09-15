@@ -544,7 +544,8 @@ def instance(request, host_id, vname):
                 return HttpResponseRedirect(request.get_full_path() + '#instancemedia')
             if 'mount_iso' in request.POST:
                 image = request.POST.get('media', '')
-                dev = request.POST.get('mount_iso', '')
+                first_cd = media[0]['dev'] if len(media) > 0 else ''
+                dev = request.POST.get('device', first_cd)
                 conn.mount_iso(dev, image)
                 return HttpResponseRedirect(request.get_full_path() + '#instancemedia')
             if 'set_autostart' in request.POST:
