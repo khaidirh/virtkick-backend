@@ -5,7 +5,7 @@ import time
 import os.path
 from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, VIR_MIGRATE_UNSAFE, \
     VIR_DOMAIN_SNAPSHOT_CREATE_LIVE, VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY, VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC, \
-    VIR_DOMAIN_AFFECT_CONFIG, VIR_DOMAIN_AFFECT_CURRENT, VIR_DOMAIN_AFFECT_LIVE
+    VIR_DOMAIN_AFFECT_CONFIG, VIR_DOMAIN_AFFECT_CURRENT, VIR_DOMAIN_AFFECT_LIVE, VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA
 from vrtManager import util
 from xml.etree import ElementTree
 from datetime import datetime
@@ -111,7 +111,7 @@ class wvmInstance(wvmConnect):
         self.instance.resume()
 
     def delete(self):
-        self.instance.undefine()
+        self.instance.undefineFlags(VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA)
 
     def _XMLDesc(self, flag):
         return self.instance.XMLDesc(flag)

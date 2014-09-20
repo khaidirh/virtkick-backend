@@ -513,6 +513,7 @@ def instance(request, host_id, vname):
                 if conn.get_status() == 1:
                     conn.force_shutdown()
                 if request.POST.get('delete_disk', ''):
+                    print 'yeah'
                     conn.delete_disk()
                 try:
                     instance = Instance.objects.get(compute_id=host_id, name=vname)
@@ -546,6 +547,7 @@ def instance(request, host_id, vname):
             if 'mount_iso' in request.POST:
                 image = request.POST.get('media', '')
                 first_cd = media[0]['dev'] if len(media) > 0 else ''
+                print first_cd
                 dev = request.POST.get('device', first_cd)
                 conn.mount_iso(dev, image)
                 return HttpResponseRedirect(request.get_full_path() + '#instancemedia')
