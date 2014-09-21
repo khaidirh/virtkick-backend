@@ -376,7 +376,7 @@ def instances(request, host_id):
                           'storage': conn2.get_disk_device(),
                           'has_managed_save_image': conn.get_instance_managed_save_image(instance)})
 
-    conn2.close()
+        conn2.close()
 
     if conn:
         try:
