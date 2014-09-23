@@ -25,8 +25,15 @@ sudo pip install -r requirements.txt
 ```
 ./manage.py runserver
 ./console/webvirtmgr-novnc
-xdg-open http://0.0.0.0:3000/ # open a browser
+xdg-open http://0.0.0.0:8000/ # open a browser
 ```
+
+## Hypervisor setup
+
+1. Add a new connection.
+2. Create a storage pool named "ISO" where ISOs will be located.
+3. Create storage pools for disks, e.g. "HDD" and "SSD".
+4. Create a NAT network 192.168.123.0/24 named "default" with IP pool for DHCP: 192.168.123.2-254.
 
 ## Deployment
 
