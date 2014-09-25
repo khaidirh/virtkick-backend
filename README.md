@@ -10,7 +10,10 @@ It will soon be replaced with our own backend.
 ## Requirements
 
 - Python 2.7
-- Linux or Mac
+- Linux
+- Packages:
+  - libvirt 1.2.x with Python bindings
+  - QEMU 2.x
 
 ## One time setup
 
@@ -36,6 +39,10 @@ xdg-open http://0.0.0.0:8000/ # open a browser
 4. Create a NAT network 192.168.123.0/24 named "default" with IP pool for DHCP: 192.168.123.2-254.
 
 ## Deployment
+
+```
+./manage.py run_gunicorn -c conf/gunicorn.conf.py
+```
 
 Since the authentication module is disabled, make sure the server listens on 127.0.0.1.
 
