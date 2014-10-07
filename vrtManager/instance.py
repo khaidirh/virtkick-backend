@@ -5,7 +5,8 @@ import time
 import os.path
 from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, VIR_MIGRATE_UNSAFE, \
     VIR_DOMAIN_SNAPSHOT_CREATE_LIVE, VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY, VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC, \
-    VIR_DOMAIN_AFFECT_CONFIG, VIR_DOMAIN_AFFECT_CURRENT, VIR_DOMAIN_AFFECT_LIVE, VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA
+    VIR_DOMAIN_AFFECT_CONFIG, VIR_DOMAIN_AFFECT_CURRENT, VIR_DOMAIN_AFFECT_LIVE, VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA, \
+    VIR_DOMAIN_DEVICE_MODIFY_FORCE
 from vrtManager import util
 from xml.etree import ElementTree
 from datetime import datetime
@@ -333,7 +334,7 @@ class wvmInstance(wvmConnect):
 
         if self.get_status() == 1:
             xml = ElementTree.tostring(disk)
-            self.instance.attachDevice(xml)
+            self.instance.updateDeviceFlags(xml, VIR_DOMAIN_DEVICE_MODIFY_FORCE)
             xmldom = self._XMLDesc(VIR_DOMAIN_XML_SECURE)
         if self.get_status() == 5:
             xmldom = ElementTree.tostring(tree)
@@ -352,7 +353,7 @@ class wvmInstance(wvmConnect):
                             disk.remove(src_media)
         if self.get_status() == 1:
             xml_disk = ElementTree.tostring(disk)
-            self.instance.attachDevice(xml_disk)
+            self.instance.updateDeviceFlags(xml_disk, VIR_DOMAIN_DEVICE_MODIFY_FORCE)
             xmldom = self._XMLDesc(VIR_DOMAIN_XML_SECURE)
         if self.get_status() == 5:
             xmldom = ElementTree.tostring(tree)
