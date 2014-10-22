@@ -9,7 +9,7 @@ from vrtManager.hostdetails import wvmHostDetails
 from vrtManager.connection import CONN_SSH, CONN_TCP, CONN_TLS, connection_manager
 from libvirt import libvirtError
 
-from shared.helpers import render
+from shared.helpers import render, redirect_or_json
 
 
 def index(request):
@@ -80,7 +80,20 @@ def servers_list(request):
                                        type=CONN_SSH,
                                        login=data['login'])
                 new_ssh_host.save()
-                return HttpResponseRedirect(request.get_full_path())
+
+                object = {
+                    'response': {
+                        'id': new_ssh_host.id
+                    }
+                }
+                return redirect_or_json(object, request.get_full_path(), request)
+            else:
+                object = {
+                    'errors': [error for error in form.errors]
+                }
+                return render(object, 'servers.html', locals(), request)
+
+
         if 'host_tls_add' in request.POST:
             form = ComputeAddTlsForm(request.POST)
             if form.is_valid():
