@@ -45,11 +45,14 @@ def networks(request, host_id):
                         errors.append(msg)
 
                     if not errors:
-                        conn.create_network(data['name'], data['forward'], gateway, netmask,
-                                            dhcp, data['bridge_name'], data['openvswitch'], data['fixed'])
+                        try:
+                            conn.create_network(data['name'], data['forward'], gateway, netmask,
+                                                dhcp, data['bridge_name'], data['openvswitch'], data['fixed'])
+                        except libvirtError as err:
+                            errors.append(err)
 
                     object = {
-                        'errors': [error for error in errors],
+                        'errors': [str(error) for error in errors],
                         'response': {}
                     }
                     url = '/%s/network/%s/' % (host_id, data['name'])
