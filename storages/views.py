@@ -10,7 +10,7 @@ from vrtManager.storage import wvmStorage, wvmStorages
 
 from libvirt import libvirtError
 
-from shared.helpers import render
+from shared.helpers import render, redirect_or_json
 
 
 def storages(request, host_id):
@@ -50,7 +50,12 @@ def storages(request, host_id):
                                                      data['ceph_user'], data['secret'])
                         else:
                             conn.create_storage(data['stg_type'], data['name'], data['source'], data['target'])
-                        return HttpResponseRedirect('/storage/%s/%s/' % (host_id, data['name']))
+                        url = '/storage/%s/%s/' % (host_id, data['name'])
+                        object = {'response': {}}
+                        return redirect_or_json(object, url, request)
+                else:
+                    errors = [error for error in form.errors]
+
         conn.close()
     except libvirtError as err:
         errors.append(err)
