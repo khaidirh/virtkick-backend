@@ -11,7 +11,7 @@ from vrtManager.network import network_size
 
 from libvirt import libvirtError
 
-from shared.helpers import render
+from shared.helpers import render, redirect_or_json
 
 
 def networks(request, host_id):
@@ -43,10 +43,18 @@ def networks(request, host_id):
                     except:
                         msg = _("Input subnet pool error")
                         errors.append(msg)
+
                     if not errors:
                         conn.create_network(data['name'], data['forward'], gateway, netmask,
                                             dhcp, data['bridge_name'], data['openvswitch'], data['fixed'])
-                        return HttpResponseRedirect('/network/%s/%s/' % (host_id, data['name']))
+
+                    object = {
+                        'errors': [error for error in errors],
+                        'response': {}
+                    }
+                    url = '/%s/network/%s/' % (host_id, data['name'])
+                    return redirect_or_json(object, url, request)
+
         conn.close()
     except libvirtError as err:
         errors.append(err)
