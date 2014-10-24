@@ -91,6 +91,9 @@ class wvmConnection(object):
                         self.connection.setKeepAlive(connection_manager.keepalive_interval, connection_manager.keepalive_count)
                         try:
                             self.connection.registerCloseCallback(self.__connection_close_callback, None)
+                        except AttributeError:
+                            # old libvirt
+                            pass
                         except TypeError:
                             # Temporary fix for libvirt > libvirt-0.10.2-41
                             pass
