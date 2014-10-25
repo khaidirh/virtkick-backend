@@ -79,7 +79,7 @@ def create(request, host_id):
                 else:
                     try:
                         conn._defineXML(xml)
-                        return HttpResponseRedirect('/instance/%s/%s' % (host_id, name))
+                        return HttpResponseRedirect('/%s/instance/%s' % (host_id, name))
                     except libvirtError as err:
                         errors.append(err.message)
             if 'create' in request.POST:
