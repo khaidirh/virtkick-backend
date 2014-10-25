@@ -84,6 +84,7 @@ def storage(request, host_id, pool):
     errors = []
     compute = Compute.objects.get(id=host_id)
     meta_prealloc = False
+    conn = None
 
     try:
         conn = wvmStorage(compute.hostname,
@@ -193,11 +194,12 @@ def storage(request, host_id, pool):
                         return HttpResponseRedirect(request.get_full_path())
                     except libvirtError as err:
                         errors.append(err)
-    conn.close()
 
-    object = {
-        'errors': [str(error) for error in errors],
-        'response': {
+    if conn:
+        conn.close()
+
+    try:
+        response = {
             'type': type,
             'path': path,
             'status': status,
@@ -206,5 +208,11 @@ def storage(request, host_id, pool):
             'autostart': autostart,
             'pool': pool
         }
+    except:
+        response = {}
+
+    object = {
+        'errors': [str(error) for error in errors],
+        'response': response
     }
     return render(object, 'storage.html', locals(), request)
