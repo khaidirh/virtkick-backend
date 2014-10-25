@@ -19,9 +19,11 @@ def networks(request, host_id):
     Networks block
     """
     errors = []
-    compute = Compute.objects.get(id=host_id)
+    object = {}
 
     try:
+        compute = Compute.objects.get(id=host_id)
+
         conn = wvmNetworks(compute.hostname,
                            compute.login,
                            compute.password,
@@ -59,10 +61,13 @@ def networks(request, host_id):
                     return redirect_or_json(object, url, request)
 
         conn.close()
+    except Compute.DoesNotExist, e:
+        object['errors'] = e.message
     except libvirtError as err:
         errors.append(err)
+        object['errors'] = [str(error) for error in errors]
 
-    return render(None, 'networks.html', locals(), request)
+    return render(object, 'networks.html', locals(), request)
 
 
 def network(request, host_id, pool):
