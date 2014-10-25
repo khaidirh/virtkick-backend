@@ -127,7 +127,7 @@ def create(request, host_id):
                                                      uuid, volumes, data['networks'], data['virtio'], data['mac'])
                                 create_instance = Instance(compute_id=host_id, name=data['name'], uuid=uuid)
                                 create_instance.save()
-                                return HttpResponseRedirect('/instance/%s/%s/' % (host_id, data['name']))
+                                return HttpResponseRedirect('/%s/instance/%s' % (host_id, data['name']))
                             except libvirtError as err:
                                 if data['hdd_size']:
                                     conn.delete_volume(volumes.keys()[0])

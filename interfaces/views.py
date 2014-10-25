@@ -86,7 +86,7 @@ def interface(request, host_id, iface):
                 return HttpResponseRedirect(request.get_full_path())
             if 'delete' in request.POST:
                 conn.delete_iface()
-                return HttpResponseRedirect('/interfaces/%s' % host_id)
+                return HttpResponseRedirect('/%s/interfaces' % host_id)
         conn.close()
     except libvirtError as err:
         errors.append(err)

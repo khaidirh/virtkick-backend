@@ -50,7 +50,7 @@ def storages(request, host_id):
                                                      data['ceph_user'], data['secret'])
                         else:
                             conn.create_storage(data['stg_type'], data['name'], data['source'], data['target'])
-                        url = '/storage/%s/%s/' % (host_id, data['name'])
+                        url = '/%s/storage/%s/' % (host_id, data['name'])
                         object = {'response': {}}
                         return redirect_or_json(object, url, request)
                 else:
@@ -130,7 +130,7 @@ def storage(request, host_id, pool):
         if 'delete' in request.POST:
             try:
                 conn.delete()
-                return HttpResponseRedirect('/storages/%s/' % host_id)
+                return HttpResponseRedirect('/%s/storages' % host_id)
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
         if 'set_autostart' in request.POST:

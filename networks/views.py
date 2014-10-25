@@ -126,7 +126,7 @@ def network(request, host_id, pool):
         if 'delete' in request.POST:
             try:
                 conn.delete()
-                return HttpResponseRedirect('/networks/%s/' % host_id)
+                return HttpResponseRedirect('/%s/networks' % host_id)
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
         if 'set_autostart' in request.POST:

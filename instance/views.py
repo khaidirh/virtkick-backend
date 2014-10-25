@@ -520,7 +520,7 @@ def instance(request, host_id, vname):
                     instance.delete()
                 finally:
                     conn.delete()
-                return HttpResponseRedirect('/instances/%s/' % host_id)
+                return HttpResponseRedirect('/%s/instances' % host_id)
             if 'assign_volume' in request.POST:
                 file = request.POST.get('file', '')
                 device = request.POST.get('device', '')
@@ -605,7 +605,7 @@ def instance(request, host_id, vname):
                 conn_migrate.moveto(conn, vname, live, unsafe, xml_del)
                 conn_migrate.define_move(vname)
                 conn_migrate.close()
-                return HttpResponseRedirect('/instance/%s/%s' % (compute_id, vname))
+                return HttpResponseRedirect('/%s/instance/%s' % (compute_id, vname))
             if 'delete_snapshot' in request.POST:
                 snap_name = request.POST.get('name', '')
                 conn.snapshot_delete(snap_name)
@@ -625,7 +625,7 @@ def instance(request, host_id, vname):
                         clone_data[post] = request.POST.get(post, '')
 
                 conn.clone_instance(clone_data)
-                return HttpResponseRedirect('/instance/%s/%s' % (host_id, clone_data['name']))
+                return HttpResponseRedirect('/%s/instance/%s' % (host_id, clone_data['name']))
 
         conn.close()
 
