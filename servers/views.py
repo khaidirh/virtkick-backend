@@ -118,7 +118,14 @@ def servers_list(request):
                 compute_edit.save()
                 return HttpResponseRedirect(request.get_full_path())
 
-    return render(None, 'servers.html', locals(), request)
+    object = {
+        'errors': {},
+        'response': {
+            'hosts_info': hosts_info
+        }
+    }
+
+    return render(object, 'servers.html', locals(), request)
 
 
 def infrastructure(request):
