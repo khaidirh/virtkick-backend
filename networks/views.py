@@ -71,6 +71,7 @@ def network(request, host_id, pool):
     """
     errors = []
     compute = Compute.objects.get(id=host_id)
+    conn = None
 
     try:
         conn = wvmNetwork(compute.hostname,
@@ -86,8 +87,28 @@ def network(request, host_id, pool):
         ipv4_dhcp_range = conn.get_ipv4_dhcp_range()
         ipv4_network = conn.get_ipv4_network()
         fixed_address = conn.get_mac_ipaddr()
+
+        object = {
+            'errors': {},
+            'response': {
+                'networks': networks,
+                'state': state,
+                'device': device,
+                'autostart': autostart,
+                'ipv4_forward': ipv4_forward,
+                'ipv4_dhcp_range': {
+                    'start': str(ipv4_dhcp_range[0]) if ipv4_dhcp_range else None,
+                    'end': str(ipv4_dhcp_range[1] if ipv4_dhcp_range else None)
+                },
+                'ipv4_network': str(ipv4_network),
+                'fixed_address': fixed_address
+            }
+        }
     except libvirtError as err:
         errors.append(err)
+        object = {
+            'errors': [str(error) for error in errors]
+        }
 
     if request.method == 'POST':
         if 'start' in request.POST:
@@ -121,6 +142,7 @@ def network(request, host_id, pool):
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
 
-    conn.close()
+    if conn:
+        conn.close()
 
-    return render(None, 'network.html', locals(), request)
+    return render(object, 'network.html', locals(), request)
