@@ -48,8 +48,12 @@ def networks(request, host_id):
 
                     if not errors:
                         try:
-                            conn.create_network(data['name'], data['forward'], gateway, netmask,
-                                                dhcp, data['bridge_name'], data['openvswitch'], data['fixed'])
+                            dns = None
+                            dns_params = request.POST.get('dns')
+                            if dns_params:
+                                dns = dns_params.split(',')
+                            conn.create_network(data['name'], data['forward'], gateway, netmask, dhcp,
+                                                data['bridge_name'], data['openvswitch'], data['fixed'], dns)
                         except libvirtError as err:
                             errors.append(err)
 

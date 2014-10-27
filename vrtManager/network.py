@@ -40,7 +40,7 @@ class wvmNetworks(wvmConnect):
     def define_network(self, xml):
         self.wvm.networkDefineXML(xml)
 
-    def create_network(self, name, forward, gateway, mask, dhcp, bridge, openvswitch, fixed=False):
+    def create_network(self, name, forward, gateway, mask, dhcp, bridge, openvswitch, fixed, dns):
         xml = """
             <network>
                 <name>%s</name>""" % name
@@ -54,6 +54,11 @@ class wvmNetworks(wvmConnect):
         xml += """/>"""
         if openvswitch is True:
             xml += """<virtualport type='openvswitch'/>"""
+        if dns:
+            xml += '<dns>'
+            for server in dns:
+                xml += "<forwarder addr='%s'/>" % server
+            xml += '</dns>'
         if forward != 'bridge':
             xml += """
                         <ip address='%s' netmask='%s'>""" % (gateway, mask)
