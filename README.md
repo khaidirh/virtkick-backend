@@ -9,6 +9,12 @@ VirtKick webapp is using it as a JSON API to libvirt.
 The backend has been built on top of [WebVirtMgr](https://github.com/retspen/webvirtmgr),
 a simple backend for KVM through libvirt. It will soon be replaced with our own backend based on [Fog.io](http://fog.io/).
 
+<p align="center">
+  <a href="https://www.indiegogo.com/projects/virtkick-take-cloud-back">
+    <img src="https://raw.github.com/virtkick/virtkick/master/indiegogo.png" />
+  </a>
+</p>
+
 ## Requirements
 
 - Python 2.7
