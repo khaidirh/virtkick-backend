@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+which python2 > /dev/null
+
+cd "$(dirname "$0")"
+if ! [ -e webvirtmgr.sqlite3 ];then
+    python2 manage.py syncdb --noinput
+    python2 manage.py collectstatic --noinput
+fi
+exec python2 manage.py runserver
