@@ -6,6 +6,5 @@ cd "$(dirname "$0")"
 
 if [ ! -f webvirtmgr.sqlite3 ] || [ "$(stat -c%s webvirtmgr.sqlite3)" == "0" ];then
     python2 manage.py syncdb --noinput
-    python2 manage.py collectstatic --noinput
 fi
 exec python2 manage.py runserver
