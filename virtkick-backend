@@ -7,4 +7,4 @@ cd "$(dirname "$0")"
 if [ ! -f webvirtmgr.sqlite3 ] || [ "$(stat -c%s webvirtmgr.sqlite3)" == "0" ];then
     python2 manage.py syncdb --noinput
 fi
-exec python2 manage.py runserver
+exec python2 manage.py run_gunicorn -c conf/gunicorn.conf.py
