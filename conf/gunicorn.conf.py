@@ -72,34 +72,17 @@ backlog = 2048
 #
 
 def get_workers():
-    procs = os.sysconf('SC_NPROCESSORS_ONLN')
-    if procs > 0:
-        return procs * 2 + 1
+    workers = os.environ.get('BACKEND_WORKERS')
+    if workers:
+        return int(workers)
     else:
-        return 3
-
+        return 2
 
 workers = get_workers()
 #worker_class = 'egg:gunicorn#eventlet'
 worker_connections = 1000
 timeout = 60
 keepalive = 2
-
-#
-# Debugging
-#
-#   debug - Turn on debugging in the server. This limits the number of
-#       worker processes to 1 and changes some error handling that's
-#       sent to clients.
-#
-#       True or False
-#
-#   spew - Install a trace function that spews every line of Python
-#       that is executed when running the server. This is the
-#       nuclear option.
-#
-#       True or False
-#
 
 debug = False
 spew = False
