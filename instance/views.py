@@ -472,7 +472,7 @@ def instance(request, host_id, vname):
         inst_xml = conn._XMLDesc(VIR_DOMAIN_XML_SECURE)
         has_managed_save_image = conn.get_managed_save_image()
         clone_disks = show_clone_disk(disks)
-        cpu_usage = conn.cpu_usage()['cpu']
+        cpu_usage = conn.raw_cpu_usage()
     except libvirtError as err:
         errors.append(err)
 

@@ -362,15 +362,34 @@ class wvmInstance(wvmConnect):
     def cpu_usage(self):
         cpu_usage = {}
         if self.get_status() == 1:
-            nbcore = self.wvm.getInfo()[2]
-            cpu_use_ago = self.instance.info()[4]
-            time.sleep(1)
-            cpu_use_now = self.instance.info()[4]
-            diff_usage = cpu_use_now - cpu_use_ago
-            cpu_usage['cpu'] = 100 * diff_usage / (1 * nbcore * 10 ** 9L)
+            cpu_usage['cpu'] = -1
+
+            node_info = self.wvm.getInfo()
+            domain_info = self.instance.info()
+            time_millis = int(round(time.time() * 1000))
+            cpu_usage['raw'] = {
+                'node_cpus': node_info[2],
+                'virt_cpus': domain_info[3],
+                'cpu_time': domain_info[4],
+                'time_millis': time_millis
+            }
         else:
             cpu_usage['cpu'] = 0
         return cpu_usage
+
+    def raw_cpu_usage(self):
+        if self.get_status() == 1:
+            node_info = self.wvm.getInfo()
+            domain_info = self.instance.info()
+            time_millis = int(round(time.time() * 1000))
+            return {
+                'node_cpus': node_info[2],
+                'virt_cpus': domain_info[3],
+                'cpu_time': domain_info[4],
+                'time_millis': time_millis
+            }
+        else:
+            return {}
 
     def disk_usage(self):
         devices = []
