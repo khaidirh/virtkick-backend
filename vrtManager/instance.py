@@ -385,7 +385,7 @@ class wvmInstance(wvmConnect):
             return {
                 'node_cpus': node_info[2],
                 'virt_cpus': domain_info[3],
-                'cpu_time': domain_info[4],
+                'cpu_time': self.instance.getCPUStats(-1)[0]['cpu_time'],
                 'time_millis': time_millis
             }
         else:
