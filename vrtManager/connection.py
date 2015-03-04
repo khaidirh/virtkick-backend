@@ -11,6 +11,7 @@ from libvirt import libvirtError
 from rwlock import ReadWriteLock
 from django.conf import settings
 
+import inspect
 
 CONN_TLS = 3
 CONN_SSH = 2

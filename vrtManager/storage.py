@@ -4,6 +4,7 @@
 from vrtManager import util
 from vrtManager.connection import wvmConnect
 
+from cache import LruCache
 
 class wvmStorages(wvmConnect):
     def get_storages_info(self):
@@ -88,6 +89,7 @@ class wvmStorage(wvmConnect):
     def get_size(self):
         return [self.pool.info()[1], self.pool.info()[3]]
 
+    @LruCache(maxsize=2, timeout=10)
     def _XMLDesc(self, flags):
         return self.pool.XMLDesc(flags)
 

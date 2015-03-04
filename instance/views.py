@@ -18,6 +18,38 @@ from webvirtmgr.settings import TIME_JS_REFRESH, QEMU_KEYMAPS
 from shared.helpers import render
 
 
+from Queue import Queue
+from threading import Thread
+
+class Worker(Thread):
+    """Thread executing tasks from a given tasks queue"""
+    def __init__(self, tasks):
+        Thread.__init__(self)
+        self.tasks = tasks
+        self.daemon = True
+        self.start()
+
+    def run(self):
+        while True:
+            func, args, kargs = self.tasks.get()
+            try: func(*args, **kargs)
+            except Exception, e: print e
+            self.tasks.task_done()
+
+class ThreadPool:
+    """Pool of threads consuming tasks from a queue"""
+    def __init__(self, num_threads):
+        self.tasks = Queue(num_threads)
+        for _ in range(num_threads): Worker(self.tasks)
+
+    def add_task(self, func, *args, **kargs):
+        """Add a task to the queue"""
+        self.tasks.put((func, args, kargs))
+
+    def wait_completion(self):
+        """Wait for completion of all the tasks in the queue"""
+        self.tasks.join()
+
 def instusage(request, host_id, vname):
     """
     Return instance usage
@@ -417,6 +449,57 @@ def instances(request, host_id):
     return render(object, 'instances.html', locals(), request)
 
 
+def instance_status(request, host_id, hostnames):
+    hostnames = hostnames.split(',')
+    compute = Compute.objects.get(id=host_id)
+    computes = Compute.objects.all()
+
+    object = {}
+    def query_machine(hostname):
+        try:
+            conn = wvmInstance(compute.hostname,
+                               compute.login,
+                               compute.password,
+                               compute.type, hostname)
+
+            # params = {
+            #     'status': 'get_status',
+            #     'cur_memory': 'get_cur_memory',
+            #     'disks': 'get_disk_device',
+            #     'vcpu': 'get_vcpu'
+            # }
+            # object[hostname] = {}
+            # def get_param(param, tocall):
+            #     print param, tocall
+            #     object[hostname][param] = getattr(conn, tocall)()
+            # mypool = ThreadPool(4)
+            # for param in params:
+            #     mypool.add_task(get_param, param, params[param])
+            # mypool.wait_completion()
+
+            object[hostname] = {
+                'status': conn.get_status(),
+                'cur_memory': conn.get_cur_memory(),
+                'disks': conn.get_disk_device(),
+                'vcpu': conn.get_vcpu()
+            }
+
+
+        except libvirtError:
+            status = None
+    pool = ThreadPool(20)
+    for hostname in hostnames:
+        pool.add_task(query_machine, hostname)
+    pool.wait_completion()
+
+    machines = []
+    for key in object:
+        val = object[key]
+        val['hostname'] = key
+        machines.append(val)
+
+    return render({'response': {'machines': machines}}, 'instance.html', locals(), request)
+
 def instance(request, host_id, vname):
     """
     Instance block
@@ -440,7 +523,6 @@ def instance(request, host_id, vname):
     computes = Compute.objects.all()
     computes_count = len(computes)
     keymaps = QEMU_KEYMAPS
-
     try:
         conn = wvmInstance(compute.hostname,
                            compute.login,
@@ -448,31 +530,70 @@ def instance(request, host_id, vname):
                            compute.type,
                            vname)
 
-        status = conn.get_status()
-        autostart = conn.get_autostart()
-        vcpu = conn.get_vcpu()
-        cur_vcpu = conn.get_cur_vcpu()
-        uuid = conn.get_uuid()
-        memory = conn.get_memory()
-        cur_memory = conn.get_cur_memory()
-        description = conn.get_description()
-        disks = conn.get_disk_device()
-        media = conn.get_media_device()
-        networks = conn.get_net_device()
-        media_iso = sorted(conn.get_iso_media())
-        vcpu_range = conn.get_max_cpus()
+
+        params = {
+            'status': 'get_status',
+            'vcpu': 'get_vcpu',
+            'cur_vcpu': 'get_cur_vcpu',
+            'uuid': 'get_uuid',
+            'memory': 'get_memory',
+            'cur_memory': 'get_cur_memory',
+            'description': 'get_description',
+            'disks': 'get_disk_device',
+            'media': 'get_media_device',
+            'vcpu_range': 'get_max_cpus',
+            'max_memory': 'get_max_memory',
+            'vnc_port': 'get_vnc_port',
+            'vnc_keymap': 'get_vnc_keymap',
+            'vnc_passwd': 'get_vnc_passwd',
+        }
+        object = {}
+        def get_param(param, tocall):
+            object[param] = getattr(conn, tocall)()
+        mypool = ThreadPool(5)
+        for param in params:
+            mypool.add_task(get_param, param, params[param])
+        mypool.wait_completion()
+
+        # status = conn.get_status()
+        status = object['status']
+        autostart = 0 #conn.get_autostart()
+        # vcpu = conn.get_vcpu()
+        vcpu = object['vcpu']
+        # cur_vcpu = conn.get_cur_vcpu()
+        cur_vcpu = object['cur_vcpu']
+        # uuid = conn.get_uuid()
+        uuid = object['uuid']
+        # memory = conn.get_memory()
+        memory = object['memory']
+        # cur_memory = conn.get_cur_memory()
+        cur_memory = object['cur_memory']
+        # description = conn.get_description()
+        description = object['description']
+        # disks = conn.get_disk_device()
+        disks = object['disks']
+        # media = conn.get_media_device()
+        media = object['media']
+        networks = ''#conn.get_net_device()
+        media_iso = []#sorted(conn.get_iso_media())
+        # vcpu_range = conn.get_max_cpus()
+        vcpu_range = object['vcpu_range']
+
         memory_range = [256, 512, 1024, 2048, 4096, 6144, 8192, 16384]
-        memory_host = conn.get_max_memory()
+        # memory_host = conn.get_max_memory()
+        memory_host = object['max_memory']
         vcpu_host = len(vcpu_range)
-        telnet_port = conn.get_telnet_port()
-        vnc_port = conn.get_vnc_port()
-        vnc_keymap = conn.get_vnc_keymap()
-        vnc_password = conn.get_vnc_passwd()
-        snapshots = sorted(conn.get_snapshot(), reverse=True)
-        inst_xml = conn._XMLDesc(VIR_DOMAIN_XML_SECURE)
-        has_managed_save_image = conn.get_managed_save_image()
-        clone_disks = show_clone_disk(disks)
-        cpu_usage = conn.raw_cpu_usage()
+        telnet_port = 0#conn.get_telnet_port()
+        # vnc_port = conn.get_vnc_port()
+        vnc_port = object['vnc_port']
+        # vnc_keymap = conn.get_vnc_keymap()
+        vnc_keymap = object['vnc_keymap']
+        vnc_password = object['vnc_passwd']
+        snapshots = []#sorted(conn.get_snapshot(), reverse=True)
+        inst_xml = ''#conn._XMLDesc(VIR_DOMAIN_XML_SECURE)
+        has_managed_save_image = 0#conn.get_managed_save_image()
+        clone_disks = []#show_clone_disk(disks)
+        cpu_usage = 0#conn.raw_cpu_usage()
     except libvirtError as err:
         errors.append(err)
 
@@ -513,7 +634,6 @@ def instance(request, host_id, vname):
                 if conn.get_status() == 1:
                     conn.force_shutdown()
                 if request.POST.get('delete_disk', ''):
-                    print 'yeah'
                     conn.delete_disk()
                 try:
                     instance = Instance.objects.get(compute_id=host_id, name=vname)
@@ -547,7 +667,6 @@ def instance(request, host_id, vname):
             if 'mount_iso' in request.POST:
                 image = request.POST.get('media', '')
                 first_cd = media[0]['dev'] if len(media) > 0 else ''
-                print first_cd
                 dev = request.POST.get('device', first_cd)
                 conn.mount_iso(dev, image)
                 return HttpResponseRedirect(request.get_full_path() + '#instancemedia')

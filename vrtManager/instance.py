@@ -1,8 +1,9 @@
-#
+
 # Copyright (C) 2013 Webvirtmgr.
 #
 import time
 import os.path
+import inspect
 from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, \
     VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY, \
     VIR_DOMAIN_AFFECT_CONFIG, VIR_DOMAIN_AFFECT_CURRENT, VIR_DOMAIN_AFFECT_LIVE, VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA, \
@@ -11,6 +12,8 @@ from vrtManager import util
 from xml.etree import ElementTree
 from datetime import datetime
 from vrtManager.connection import wvmConnect
+from cache import LruCache
+
 
 
 class wvmInstances(wvmConnect):
@@ -114,12 +117,14 @@ class wvmInstance(wvmConnect):
     def delete(self):
         self.instance.undefineFlags(VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA)
 
+    @LruCache(maxsize=1, timeout=10)
     def _XMLDesc(self, flag):
         return self.instance.XMLDesc(flag)
 
     def _defineXML(self, xml):
         self.wvm.defineXML(xml)
 
+    @LruCache(maxsize=1, timeout=10)
     def get_status(self):
         return self.instance.info()[0]
 
@@ -186,7 +191,6 @@ class wvmInstance(wvmConnect):
                     ip = None
                 result.append({'mac': mac_host, 'nic': nic_host, 'ip': ip})
             return result
-
         return util.get_xml_path(self._XMLDesc(0), func=networks)
 
     def get_disk_device(self):
@@ -220,7 +224,6 @@ class wvmInstance(wvmConnect):
                     result.append(obj)
 
             return result
-
         return util.get_xml_path(self._XMLDesc(0), func=disks)
 
     def get_media_device(self):
@@ -249,7 +252,6 @@ class wvmInstance(wvmConnect):
                     finally:
                         result.append({'dev': dev, 'image': volume, 'storage': storage, 'path': src_fl})
             return result
-
         return util.get_xml_path(self._XMLDesc(0), func=disks)
 
     def assign_volume(self, file, device):
@@ -282,7 +284,6 @@ class wvmInstance(wvmConnect):
 
         devices = tree.findall('devices')[-1]
         for device in devices:
-            print device
             if device.tag == 'disk':
                 target = device.findall('target')[-1]
                 if target.get('dev') == device_to_unassign:
@@ -319,7 +320,7 @@ class wvmInstance(wvmConnect):
                             if existing_media is None:
                                 disk.insert(2, src_media)
                             return True
-
+        vol = 0
         storages = self.get_storages()
         for storage in storages:
             stg = self.get_storage(storage)
