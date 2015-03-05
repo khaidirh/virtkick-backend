@@ -449,54 +449,42 @@ def instances(request, host_id):
     return render(object, 'instances.html', locals(), request)
 
 
-def instance_status(request, host_id, hostnames):
-    hostnames = hostnames.split(',')
-    compute = Compute.objects.get(id=host_id)
-    computes = Compute.objects.all()
-
-    object = {}
-    def query_machine(hostname):
-        try:
-            conn = wvmInstance(compute.hostname,
-                               compute.login,
-                               compute.password,
-                               compute.type, hostname)
-
-            # params = {
-            #     'status': 'get_status',
-            #     'cur_memory': 'get_cur_memory',
-            #     'disks': 'get_disk_device',
-            #     'vcpu': 'get_vcpu'
-            # }
-            # object[hostname] = {}
-            # def get_param(param, tocall):
-            #     print param, tocall
-            #     object[hostname][param] = getattr(conn, tocall)()
-            # mypool = ThreadPool(4)
-            # for param in params:
-            #     mypool.add_task(get_param, param, params[param])
-            # mypool.wait_completion()
-
-            object[hostname] = {
-                'status': conn.get_status(),
-                'cur_memory': conn.get_cur_memory(),
-                'disks': conn.get_disk_device(),
-                'vcpu': conn.get_vcpu()
-            }
-
-
-        except libvirtError:
-            status = None
-    pool = ThreadPool(20)
-    for hostname in hostnames:
-        pool.add_task(query_machine, hostname)
-    pool.wait_completion()
-
+def instance_status(request):
+    payload = json.loads(request.body)
     machines = []
-    for key in object:
-        val = object[key]
-        val['hostname'] = key
-        machines.append(val)
+    def query_hypervisor(hostnames):
+        compute = Compute.objects.get(id=host_id)
+
+        object = {}
+        def query_machine(hostname):
+            try:
+                conn = wvmInstance(compute.hostname,
+                                   compute.login,
+                                   compute.password,
+                                   compute.type, hostname)
+                object[hostname] = {
+                    'status': conn.get_status(),
+                    'cur_memory': conn.get_cur_memory(),
+                    'disks': conn.get_disk_device(),
+                    'vcpu': conn.get_vcpu()
+                }
+            except libvirtError:
+                status = None
+        pool = ThreadPool(min(len(hostnames), 20))
+        for hostname in hostnames:
+            pool.add_task(query_machine, hostname)
+        pool.wait_completion()
+
+        for key in object:
+            val = object[key]
+            val['hostname'] = key
+            val['hypervisor_id'] = host_id
+            machines.append(val)
+
+    pool = ThreadPool(min(len(payload), 10))
+    for host_id in payload:
+        pool.add_task(query_hypervisor, payload[host_id])
+    pool.wait_completion()
 
     return render({'response': {'machines': machines}}, 'instance.html', locals(), request)
 
